@@ -121,7 +121,7 @@ async function generatePDF(){
 
     // ===== TITLE =====
     doc.setFontSize(22);
-    doc.text("EXAMPLE", 80, 25);
+    doc.text("INVOICE", 80, 25);
 
     // ===== DETAILS =====
     doc.setFontSize(12);
@@ -177,4 +177,77 @@ async function generatePDF(){
 </script>
 
 </body>
-</html>
+</html>      <th>Price</th>
+      <th>Total</th>
+    </tr>
+  </thead>
+
+  <tbody></tbody>
+</table>
+
+<button onclick="generatePDF()">Download Invoice PDF</button>
+
+<script>
+
+let products = [];
+
+function addProduct(){
+
+    let product = document.getElementById("product").value;
+    let qty = document.getElementById("qty").value;
+    let price = document.getElementById("price").value;
+
+    let total = qty * price;
+
+    products.push({
+      product,
+      qty,
+      price,
+      total
+    });
+
+    let table = document.querySelector("#productTable tbody");
+
+    let row = `
+      <tr>
+        <td>${product}</td>
+        <td>${qty}</td>
+        <td>${price}</td>
+        <td>${total}</td>
+      </tr>
+    `;
+
+    table.innerHTML += row;
+
+    // Clear inputs
+    document.getElementById("product").value = "";
+    document.getElementById("qty").value = "";
+    document.getElementById("price").value = "";
+}
+
+async function generatePDF(){
+
+    const { jsPDF } = window.jspdf;
+
+    const doc = new jsPDF();
+
+    let invoiceNo = document.getElementById("invoiceNo").value;
+    let customerName = document.getElementById("customerName").value;
+
+    // ===== BORDER =====
+    doc.rect(10, 10, 190, 277);
+
+    // ===== TITLE =====
+    doc.setFontSize(22);
+    doc.text("EXAMPLE", 80, 25);
+
+    // ===== DETAILS =====
+    doc.setFontSize(12);
+
+    doc.text("Invoice No: " + invoiceNo, 20, 45);
+    doc.text("Customer Name: " + customerName, 20, 55);
+    doc.text("Date: " + new Date().toLocaleDateString(), 20, 65);
+
+    // ===== TABLE HEADER =====
+    let y = 90;
+
