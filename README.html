@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Multi Product Invoice PDF</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    body{
+      font-family: Arial;
+      padding:20px;
+    }
+
+    input{
+      padding:8px;
+      margin:5px;
+      width:180px;
+    }
+
+    button{
+      padding:10px 20px;
+      margin-top:10px;
+      cursor:pointer;
+    }
+
+    table{
+      border-collapse: collapse;
+      margin-top:20px;
+      width:100%;
+    }
+
+    table, th, td{
+      border:1px solid black;
+    }
+
+    th, td{
+      padding:10px;
+      text-align:center;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Invoice Generator</h2>
+
+<input type="text" id="invoiceNo" placeholder="Invoice Number">
+<input type="text" id="customerName" placeholder="Customer Name">
+
+<h3>Add Product</h3>
+
+<input type="text" id="product" placeholder="Product Name">
+<input type="number" id="qty" placeholder="Quantity">
+<input type="number" id="price" placeholder="Price">
+
+<button onclick="addProduct()">Add Product</button>
+
+<table id="productTable">
+  <thead>
+    <tr>
+      <th>Product</th>
+      <th>Qty</th>
+      <th>Price</th>
+      <th>Total</th>
+    </tr>
+  </thead>
+
+  <tbody></tbody>
+</table>
+
+<button onclick="generatePDF()">Download Invoice PDF</button>
+
+<script>
+
+let products = [];
+
+function addProduct(){
+
+    let product = document.getElementById("product").value;
+    let qty = document.getElementById("qty").value;
+    let price = document.getElementById("price").value;
+
+    let total = qty * price;
+
+    products.push({
+      product,
+      qty,
+      price,
+      total
+    });
+
+    let table = document.querySelector("#productTable tbody");
+
+    let row = `
+      <tr>
+        <td>${product}</td>
+        <td>${qty}</td>
+        <td>${price}</td>
+        <td>${total}</td>
+      </tr>
+    `;
+
+    table.innerHTML += row;
+
+    // Clear inputs
+    document.getElementById("product").value = "";
+    document.getElementById("qty").value = "";
+    document.getElementById("price").value = "";
+}
+
+async function generatePDF(){
+
+    const { jsPDF } = window.jspdf;
+
+    const doc = new jsPDF();
+
+    let invoiceNo = document.getElementById("invoiceNo").value;
+    let customerName = document.getElementById("customerName").value;
+
+    // ===== BORDER =====
+    doc.rect(10, 10, 190, 277);
+
+    // ===== TITLE =====
+    doc.setFontSize(22);
+    doc.text("CAUTATION ", 80, 25);
+
+    // ===== DETAILS =====
+    doc.setFontSize(12);
+
+    doc.text("Invoice No: " + invoiceNo, 20, 45);
+    doc.text("Customer Name: " + customerName, 20, 55);
+    doc.text("Date: " + new Date().toLocaleDateString(), 20, 65);
+
+    // ===== TABLE HEADER =====
+    let y = 90;
+
+    doc.setFillColor(220,220,220);
+    doc.rect(20, y, 170, 10, "F");
+
+    doc.text("Product", 25, y + 7);
+    doc.text("Qty", 100, y + 7);
+    doc.text("Price", 130, y + 7);
+    doc.text("Total", 165, y + 7);
+
+    y += 15;
+
+    let grandTotal = 0;
+
+    // ===== PRODUCTS =====
+    products.forEach((item) => {
+
+        doc.rect(20, y - 5, 170, 10);
+
+        doc.text(item.product, 25, y + 2);
+        doc.text(item.qty.toString(), 100, y + 2);
+        doc.text(item.price.toString(), 130, y + 2);
+        doc.text(item.total.toString(), 165, y + 2);
+
+        grandTotal += item.total;
+
+        y += 15;
+    });
+
+    // ===== GRAND TOTAL =====
+    doc.setFontSize(14);
+
+    doc.text("Grand Total : " + grandTotal, 120, y + 20);
+
+    // ===== FOOTER =====
+    doc.setFontSize(10);
+
+    doc.text("Thank You!", 90, 270);
+
+    // ===== SAVE PDF =====
+    doc.save("invoice.pdf");
+}
+
+</script>
+
+</body>
+</html>
